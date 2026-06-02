@@ -1,0 +1,18 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.pipeworx-io/unesco-uis",
+  "title": "Unesco Uis",
+  "description": "UNESCO Institute for Statistics (UIS) MCP — keyless.",
+  "version": "0.1.0",
+  "websiteUrl": "https://pipeworx.io/packs/unesco-uis",
+  "repository": {
+    "url": "https://github.com/pipeworx-io/mcp-unesco-uis",
+    "source": "github"
+  },
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://gateway.pipeworx.io/unesco-uis/mcp"
+    }
+  ]
+}
