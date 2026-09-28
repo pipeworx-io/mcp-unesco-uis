@@ -748,7 +748,8 @@ async function callTool(name: string, args: Record<string, unknown>): Promise<un
       for (const g of splitList(geoUnit)) qs.append('geoUnit', g);
       if (typeof args.start === 'number') qs.set('start', String(args.start));
       if (typeof args.end === 'number') qs.set('end', String(args.end));
-      return uisGet(`/data/indicators?${qs.toString()}`);
+      const out = (await uisGet(`/data/indicators?${qs.toString()}`)) as UisDataResponse;
+      return labelEmpty(out, indicator, geoUnit);
     }
     case 'list_indicators': {
       const all = (await uisGet('/definitions/indicators')) as Array<Record<string, unknown>>;
@@ -771,6 +772,45 @@ async function callTool(name: string, args: Record<string, unknown>): Promise<un
     default:
       throw new Error(`Unknown tool: ${name}`);
   }
+}
+
+interface UisDataResponse {
+  hints?: { code?: string; message?: string }[];
+  records?: unknown[];
+  [k: string]: unknown;
+}
+
+/**
+ * UIS answers every miss with HTTP 200, `records: []` and the reason in
+ * `hints` — which went out as a plain success (fleet #2496). Hint codes are
+ * verbatim from the live API, 2026-09-28:
+ *   UIS::HINT::001 "The indicator could not be found, NOSUCH.1"  → not_found
+ *   UIS::HINT::004 "No data for the given time range, available time range …" → empty
+ * Any "could not be found" hint (indicator or geoUnit) is the caller naming a
+ * thing UIS does not have; any other empty is an honest no-match, labelled.
+ */
+function labelEmpty(out: UisDataResponse, indicator: string, geoUnit: string): unknown {
+  if (!Array.isArray(out?.records) || out.records.length > 0) return out;
+  const hints = (out.hints ?? []).map((h) => h.message ?? '').filter(Boolean);
+  const missing = hints.filter((m) => /could not be found|not found|does not exist/i.test(m));
+  if (missing.length > 0) {
+    return {
+      error: 'not_found',
+      message:
+        `UNESCO UIS: ${missing.join('; ')}. Call list_indicators({search: "..."}) for indicator ids ` +
+        `and list_geounits({search: "..."}) for ISO3 country codes.`,
+      indicator,
+      geoUnit,
+    };
+  }
+  return {
+    ...out,
+    empty_reason: 'no_match',
+    note:
+      hints.length > 0
+        ? `UNESCO UIS has no values for indicator "${indicator}" / geoUnit "${geoUnit}" in this request: ${hints.join('; ')}.`
+        : `UNESCO UIS has no values for indicator "${indicator}" / geoUnit "${geoUnit}" in this request. Widen the year range or try another country.`,
+  };
 }
 
 async function uisGet(path: string): Promise<unknown> {
