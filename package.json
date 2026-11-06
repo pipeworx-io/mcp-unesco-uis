@@ -1,6 +1,6 @@
 {
   "name": "@pipeworx/mcp-unesco-uis",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "UNESCO Institute for Statistics (UIS) MCP — keyless.",
   "type": "module",
   "main": "lib/index.js",
@@ -27,7 +27,7 @@
     "mode": "gateway",
     "slug": "unesco-uis",
     "gatewaySlug": "unesco-uis",
-    "sourceHash": "v1-84f554806e907c29ea3cd0e0f1b5c299165246cc77cb7064589b7c10e3151b24",
-    "sourceCommit": "98853f34516646cb7c4c1460f09249b262c0269e"
+    "sourceHash": "v1-9e4d2e129c0e9b0305cfbd0a810cd2da24b52b83b556a92c3282c5a1a9cd012f",
+    "sourceCommit": "ca52e7ed1e1ccad897c2da1b0fa105edc0bc3b2e"
   }
 }
